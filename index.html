@@ -4,14 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Tracker</title>
-    <link rel="stylesheet" href="index.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .search {
+            margin-bottom: 20px;
+        }
+        #city-input {
+            padding: 10px;
+            width: 70%;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #search-btn {
+            padding: 10px 15px;
+            background: #3498db;
+            color: rgb(33, 24, 24);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #search-btn:hover {
+            background: #2980b9;
+        }
+        #welcome, #error, #loading {
+            margin: 20px 0;
+        }
+        #weather-card {
+            margin-top: 20px;
+        }
+        #weather-img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            #city-input {
+                width: 60%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Weather Tracker</h1>
-    <p>Welcome to the Weather Tracker! Stay updated with the latest weather information.</p>
+    <div   class="container">
+        <h1>Weather Tracker</h1>
+        <div class="search">
+            <input type="text" id="city-input" placeholder="Enter city name">
+            <button id="search-btn">Search</button>
+        </div>
+        <div id="welcome">Welcome! Search for a city to get weather info.</div>
+        <div id="loading" style="display: none;">Loading...</div>
+        <div id="error" style="display: none;"></div>
+        <div id="weather-card" style="display: none;">
+
+        </div>
+            <h2 id="city-name">Kenya</h2>
+            <p id="temp"></p>
+            <p id="desc"></p>
+            <p id="humidity"></p>
+            <p id="wind"></p>
+            <img id="weather-img" src="images/Rainy.jpeg" alt="Weather Image">
+        </div>
+   
 </body>
+
+    <div class = "card autumn">
+        <h2>autumn</h2>
+        <p id="autumn">in a minute...</p>
+    </div>  
+
+    <div class = "card">
+        <h2> Rainy </h2>
+        <p id="rainy">in a minute...</p>
+    </div>
+  
 <script>
     // JavaScript code for fetching and displaying weather data will go here
+        const apiKey = '617b9e6cdbea365757070804636c2a13';
+        const searchBtn = document.getElementById('search-btn');
+        const cityInput = document.getElementById('city-input');
+        const welcomeDiv = document.getElementById('welcome');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const weatherCard = document.getElementById('weather-card');
+        const cityName = document.getElementById('city-name');
+        const temp = document.getElementById('temp');
+        const desc = document.getElementById('desc');
+        const humidity = document.getElementById('humidity');
+        const wind = document.getElementById('wind');
+        const weatherImg = document.getElementById('weather-img');
 
-</script>
+        const imageMap = {
+            'Rain': 'images/Rainy.jpeg',
+            'Drizzle': 'images/Rainy.jpeg',
+            'Thunderstorm': 'images/Rainy.jpeg',
+            'Clear': 'images/Summer.jpeg',
+            'Clouds': 'images/Autumn.jpeg',
+            'Snow': 'images/WInter.jpeg',
+            'Mist': 'images/Humid.jpeg',
+            'Smoke': 'images/Humid.jpeg',
+            'Haze': 'images/Humid.jpeg',
+            'Dust': 'images/Humid.jpeg',
+            'Fog': 'images/Humid.jpeg',
+            'Sand': 'images/Humid.jpeg',
+            'Ash': 'images/Humid.jpeg',
+            'Squall': 'images/Rainy.jpeg',
+            'Tornado': 'images/Rainy.jpeg'
+        };
+
+        function showWelcome() {
+            welcomeDiv.style.display = 'block';
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            weatherCard.style.display = 'none';
+        }
+
+        function showLoading() {
+            welcomeDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            weatherCard.style.display = 'none';
+        }
+
+        function showError(message) {
+            welcomeDiv.style.display = 'none';
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = message;
+            weatherCard.style.display = 'none';
+        }
+
+        function showWeather(data) {
+            welcomeDiv.style.display = 'none';
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            weatherCard.style.display = 'block';
+
+            cityName.textContent = `${data.name}, ${data.sys.country}`;
+            temp.textContent = `Temperature: ${data.main.temp}°C`;
+            desc.textContent = `Weather: ${data.weather[0].description}`;
+            humidity.textContent = `Humidity: ${data.main.humidity}%`;
+            wind.textContent = `Wind Speed: ${data.wind.speed} m/s`;
+
+            const condition = data.weather[0].main;
+            const imageSrc = imageMap[condition] || 'images/Summer.jpeg';
+            weatherImg.src = imageSrc;
+        }
+
+        async function fetchWeather(city) {
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('City not found');
+                }
+                const data = await response.json();
+                showWeather(data);
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function handleSearch() {
+            const city = cityInput.value.trim();
+            if (city) {
+                showLoading();
+                fetchWeather(city);
+            }
+        }
+
+        searchBtn.addEventListener('click', handleSearch);
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // Initialize
+        showWelcome();
+    </script>
 </html> 
